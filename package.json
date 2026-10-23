@@ -12,7 +12,8 @@
     "env:stop:tests": "wp-env stop --config=.wp-env.tests.json",
     "env:destroy:tests": "wp-env destroy --config=.wp-env.tests.json",
     "test:php": "wp-env run --config=.wp-env.tests.json cli --env-cwd=wp-content/plugins/wp-auto-translator ./vendor/bin/phpunit -c phpunit.wp.xml.dist",
-    "wp": "wp-env run cli wp"
+    "wp": "wp-env run cli wp",
+    "plugin:zip": "node scripts/package-plugin.mjs"
   },
   "devDependencies": {
     "@wordpress/env": "^12.0.0"

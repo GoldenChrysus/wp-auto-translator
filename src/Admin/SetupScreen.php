@@ -197,12 +197,14 @@ final class SetupScreen
     private function renderAuto(): void
     {
         echo '<p>' . esc_html__('When a base-language post is published, queue a translation for every target language. Drafts are not sent to the model until they are published.', 'wp-auto-translator') . '</p>';
+        echo '<p>';
         echo '<label><input type="radio" name="auto_translate" value="1"';
         checked(Options::autoTranslate());
         echo '> ' . esc_html__('Yes, translate new posts automatically', 'wp-auto-translator') . '</label><br>';
         echo '<label><input type="radio" name="auto_translate" value="0"';
         checked(! Options::autoTranslate());
         echo '> ' . esc_html__('No, I will start translations myself', 'wp-auto-translator') . '</label>';
+        echo '</p>';
         $this->submit(__('Continue', 'wp-auto-translator'));
         $this->back();
     }

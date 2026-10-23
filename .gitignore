@@ -1,5 +1,7 @@
 /vendor/
 /node_modules/
+/build/
+/dist/
 /.phpunit.cache/
 /.wp-env/
 /.wp-env.override.json

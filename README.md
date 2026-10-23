@@ -52,7 +52,7 @@ Changing the base locale later does not retag posts that already have one. The s
 
 ## Neuron
 
-Translations go through [Neuron](https://github.com/neuron-core/neuron-ai)'s OpenAI Responses provider. Neuron's default message store and workflow persistence are in memory, so a translation does not create its `chat_messages` table. That table is only for chat history you explicitly persist. Run `composer install` in the plugin directory before activating it; Neuron is a runtime dependency.
+Translations go through [Neuron](https://github.com/neuron-core/neuron-ai)'s OpenAI Responses provider. Neuron's default message store and workflow persistence are in memory, so a translation does not create its `chat_messages` table. That table is only for chat history you explicitly persist. The upload zip from `npm run plugin:zip` already contains Neuron. For local development, run `composer install` in the plugin directory.
 
 The request uses structured output (`text.format.type` of `json_schema`). Temperature is omitted because several current models reject that parameter on the Responses API. `wat_openai_request_parameters` can add provider parameters, including `temperature` for a model that accepts it.
 
@@ -64,6 +64,20 @@ Other filters:
 - `wat_translation_post_data` — the `wp_update_post()` array for a finished translation.
 - `wat_openai_request_parameters` — extra Responses API fields passed to Neuron. Temperature is not included unless you add it.
 - `wat_capability` — defaults to `manage_options`.
+
+## Install on a site
+
+WordPress.com can install this plugin on any paid plan. A free site has to be upgraded first. In wp-admin open **Plugins → Add New Plugin → Upload Plugin**, choose `dist/wp-auto-translator.zip`, and activate it. Leave the zip intact. WordPress expects the plugin folder inside the archive.
+
+Build that zip from this repository:
+
+```bash
+npm run plugin:zip
+```
+
+The script copies the plugin, installs production Composer packages (Neuron, without PHPUnit), and writes `dist/wp-auto-translator.zip`. The same file works on a self-hosted site.
+
+After activation, open **Translations → Setup**.
 
 ## Local development
 
