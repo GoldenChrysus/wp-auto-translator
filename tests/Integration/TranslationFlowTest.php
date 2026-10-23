@@ -127,4 +127,54 @@ final class TranslationFlowTest extends \WP_UnitTestCase
         $this->assertContains($japanese, wp_list_pluck($query->posts, 'ID'));
         $this->assertNotContains($english, wp_list_pluck($query->posts, 'ID'));
     }
+
+    public function test_slug_with_lang_accepts_the_base_slug_and_returns_the_translation(): void
+    {
+        update_option('wat_base_locale', 'en_US');
+
+        $english = self::factory()->post->create([
+            'post_title' => 'My post',
+            'post_name' => 'my-post',
+            'post_status' => 'publish',
+        ]);
+        $original = $this->repository->findByPostId($english);
+        $this->assertNotNull($original);
+
+        TranslatorLock::enable();
+        $japanese = self::factory()->post->create([
+            'post_title' => '私のポスト',
+            'post_name' => 'watashi-no-posuto',
+            'post_status' => 'publish',
+        ]);
+        $french = self::factory()->post->create([
+            'post_title' => 'Mon article',
+            'post_name' => 'mon-article',
+            'post_status' => 'publish',
+        ]);
+        TranslatorLock::disable();
+
+        $this->repository->insert($original->groupId, $japanese, 'ja', $english, 'translated', $original->sourceHash);
+        $this->repository->insert($original->groupId, $french, 'fr_FR', $english, 'translated', $original->sourceHash);
+
+        $baseLocale = new \WP_REST_Request('GET', '/wp/v2/posts');
+        $baseLocale->set_query_params(['slug' => 'my-post', 'lang' => 'en_US']);
+        $baseLocaleIds = array_map('intval', wp_list_pluck(rest_get_server()->dispatch($baseLocale)->get_data(), 'id'));
+        $this->assertSame([$english], $baseLocaleIds);
+
+        $fromBaseSlug = new \WP_REST_Request('GET', '/wp/v2/posts');
+        $fromBaseSlug->set_query_params(['slug' => 'my-post', 'lang' => 'ja']);
+        $baseResponse = rest_get_server()->dispatch($fromBaseSlug);
+        $this->assertSame(200, $baseResponse->get_status());
+        $baseIds = array_map('intval', wp_list_pluck($baseResponse->get_data(), 'id'));
+        $this->assertSame([$japanese], $baseIds);
+
+        $fromTranslatedSlug = new \WP_REST_Request('GET', '/wp/v2/posts');
+        $fromTranslatedSlug->set_query_params(['slug' => 'watashi-no-posuto', 'lang' => 'ja']);
+        $translatedIds = array_map('intval', wp_list_pluck(rest_get_server()->dispatch($fromTranslatedSlug)->get_data(), 'id'));
+        $this->assertSame([$japanese], $translatedIds);
+
+        $otherLocaleSlug = new \WP_REST_Request('GET', '/wp/v2/posts');
+        $otherLocaleSlug->set_query_params(['slug' => 'mon-article', 'lang' => 'ja']);
+        $this->assertSame([], rest_get_server()->dispatch($otherLocaleSlug)->get_data());
+    }
 }

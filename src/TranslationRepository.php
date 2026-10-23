@@ -46,6 +46,49 @@ final class TranslationRepository
         return $row ? TranslationRecord::fromRow($row) : null;
     }
 
+    /**
+     * Posts in $locale with one of these slugs, plus translations whose base post has one of these slugs.
+     *
+     * @param list<string> $slugs
+     * @return list<int>
+     */
+    public function postIdsForLocaleSlugs(string $postType, string $locale, array $slugs): array
+    {
+        $slugs = array_values(array_filter(
+            $slugs,
+            static fn (string $slug): bool => $slug !== ''
+        ));
+        if ($postType === '' || $locale === '' || $slugs === []) {
+            return [];
+        }
+
+        global $wpdb;
+        $table = Schema::table();
+        $placeholders = implode(',', array_fill(0, count($slugs), '%s'));
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+        $ids = $wpdb->get_col(
+            $wpdb->prepare(
+                "SELECT DISTINCT target.post_id
+                FROM {$wpdb->posts} slug_post
+                INNER JOIN {$table} slug_row ON slug_row.post_id = slug_post.ID
+                INNER JOIN {$table} target
+                    ON target.locale = %s
+                    AND (
+                        target.post_id = slug_post.ID
+                        OR (slug_row.source_post_id = 0 AND target.source_post_id = slug_post.ID)
+                    )
+                WHERE slug_post.post_type = %s
+                    AND slug_post.post_status NOT IN ('trash', 'auto-draft')
+                    AND slug_post.post_name IN ({$placeholders})",
+                $locale,
+                $postType,
+                ...$slugs
+            )
+        );
+
+        return array_values(array_map('intval', $ids));
+    }
+
     public function insertOriginal(int $postId, string $locale, string $hash): TranslationRecord
     {
         $existing = $this->findByPostId($postId);

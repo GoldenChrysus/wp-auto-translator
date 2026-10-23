@@ -14,6 +14,8 @@ if (! defined('ABSPATH') && ! defined('WAT_TESTING')) {
  * Without lang, translation posts are hidden from the main archives, the admin list,
  * and REST collections so a translated site does not list every locale at once.
  * Fetch a translation directly by ID, or pass lang, to see it.
+ * With both slug and lang, a slug matches the post in that locale or the base post it was translated from.
+ * The post returned is always the one in the requested locale.
  */
 final class LocaleQuery
 {
@@ -125,17 +127,55 @@ final class LocaleQuery
     public function filterRestQuery(array $args, \WP_REST_Request $request): array
     {
         $lang = $request->get_param('lang');
-        if (is_string($lang) && $lang !== '') {
-            $locale = $this->locales->normalize($lang);
-            if ($locale !== null) {
-                $args['wat_locale'] = $locale;
-                $args['wat_hide_translations'] = false;
-            }
+        if (! is_string($lang) || $lang === '') {
+            $args['wat_hide_translations'] = true;
             return $args;
         }
 
-        $args['wat_hide_translations'] = true;
+        $locale = $this->locales->normalize($lang);
+        if ($locale === null) {
+            return $args;
+        }
+
+        $args['wat_locale'] = $locale;
+        $args['wat_hide_translations'] = false;
+
+        $slugs = $this->requestedSlugs($args);
+        $postType = isset($args['post_type']) && is_string($args['post_type']) ? $args['post_type'] : '';
+        if ($slugs === [] || $postType === '') {
+            return $args;
+        }
+
+        $ids = $this->repository->postIdsForLocaleSlugs($postType, $locale, $slugs);
+        // The posts endpoint defaults include to an empty array and copies that onto post__in.
+        // WP_Query ignores an empty post__in. Intersecting with it would discard every match.
+        if (isset($args['post__in']) && is_array($args['post__in']) && $args['post__in'] !== []) {
+            $ids = array_values(array_intersect($ids, array_map('intval', $args['post__in'])));
+        }
+        unset($args['post_name__in']);
+        $args['post__in'] = $ids === [] ? [0] : $ids;
+
         return $args;
+    }
+
+    /**
+     * @param array<string, mixed> $args
+     * @return list<string>
+     */
+    private function requestedSlugs(array $args): array
+    {
+        if (! isset($args['post_name__in']) || ! is_array($args['post_name__in'])) {
+            return [];
+        }
+
+        $slugs = [];
+        foreach ($args['post_name__in'] as $slug) {
+            if (is_string($slug) && $slug !== '') {
+                $slugs[] = $slug;
+            }
+        }
+
+        return $slugs;
     }
 
     /**

@@ -23,6 +23,12 @@ GET /wp-json/wp/v2/pages?lang=fr_FR
 
 `lang` accepts a WordPress locale (`en_US`, `ja`) or the same code with a hyphen (`en-US`). An unknown code is a 400. Each post in the response includes a `lang` field.
 
+`slug` and `lang` together return the post in that locale. The slug can be the translated post's own slug, or the base post's slug. A base slug still returns the translation, not the original. If that locale has no translation, the collection is empty.
+
+```http
+GET /wp-json/wp/v2/posts?slug=my-post&lang=ja
+```
+
 Without `lang`, REST collections, the main front-end query, and the admin list hide translation posts so the site does not list every language at once. A translation is still available by ID, and `WP_Query` accepts `lang` directly:
 
 ```php
