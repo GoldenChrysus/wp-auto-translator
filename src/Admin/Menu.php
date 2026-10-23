@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WpAutoTranslator\Admin;
 
 use WpAutoTranslator\Capabilities;
+use WpAutoTranslator\Cron;
 use WpAutoTranslator\LocaleRegistry;
 use WpAutoTranslator\Options;
 use WpAutoTranslator\PostAssociator;
@@ -133,6 +134,7 @@ final class Menu
         wp_localize_script('wat-admin', 'watAdmin', [
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('wat_admin'),
+            'workers' => Cron::WORKERS,
         ]);
     }
 

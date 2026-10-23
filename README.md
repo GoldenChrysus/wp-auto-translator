@@ -42,7 +42,7 @@ new WP_Query([
 
 Only the title, content, and excerpt are sent to the model. HTML, Gutenberg block comments, and shortcodes are meant to be preserved. Translated HTML is passed through `wp_kses_post()` after block comments are held aside, because kses would otherwise delete them. Script tags are removed.
 
-The queue runs one post/locale pair per request so a long run does not time out. Publishing a post only records pending work. wp-cron picks up the next job about 15 seconds later and schedules another single event if anything remains. The status screen also walks the queue in the browser, which is the reliable path on a machine that does not receive public traffic.
+The queue runs one post/locale pair per request so a long run does not time out. Publishing a post only records pending work. When a job finishes, wp-cron is scheduled for 15 seconds later, so the queue continues after you leave the admin. That event also asks the site to start more jobs, up to four at once, and will not start another while four are already running. The status screen runs the same four jobs in the browser while that page stays open.
 
 Posts longer than 80,000 characters are rejected instead of being truncated into a broken translation.
 

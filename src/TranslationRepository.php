@@ -279,7 +279,7 @@ final class TranslationRepository
         $table = Schema::table();
         $stale = gmdate('Y-m-d H:i:s', time() - 600);
 
-        for ($attempt = 0; $attempt < 3; $attempt++) {
+        for ($attempt = 0; $attempt < 8; $attempt++) {
             // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
             $row = $wpdb->get_row(
                 $wpdb->prepare(
@@ -310,6 +310,35 @@ final class TranslationRepository
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         return (int) $wpdb->get_var(
             "SELECT COUNT(*) FROM {$table} WHERE status IN ('pending', 'translating')"
+        );
+    }
+
+    public function countInFlight(): int
+    {
+        global $wpdb;
+        $table = Schema::table();
+        $fresh = gmdate('Y-m-d H:i:s', time() - 600);
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        return (int) $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$table} WHERE status = 'translating' AND updated_at >= %s",
+                $fresh
+            )
+        );
+    }
+
+    public function countClaimable(): int
+    {
+        global $wpdb;
+        $table = Schema::table();
+        $stale = gmdate('Y-m-d H:i:s', time() - 600);
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        return (int) $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$table}
+                WHERE status = 'pending' OR (status = 'translating' AND updated_at < %s)",
+                $stale
+            )
         );
     }
 

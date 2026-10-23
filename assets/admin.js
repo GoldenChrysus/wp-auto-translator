@@ -40,14 +40,26 @@
                     }
                 }
 
-                for (;;) {
-                    const result = await call('wat_process_next');
-                    if (!result.processed) {
-                        progress.textContent = 'Queue finished.';
-                        break;
+                const workers = Math.max(1, Number(config.workers) || 4);
+                let failures = 0;
+                async function drain() {
+                    try {
+                        for (;;) {
+                            const result = await call('wat_process_next');
+                            if (!result.processed) {
+                                return;
+                            }
+                            const detail = result.error ? result.error : ('Translated to ' + result.locale);
+                            progress.textContent = detail + '. ' + result.remaining + ' left.';
+                        }
+                    } catch (error) {
+                        failures += 1;
+                        progress.textContent = error.message;
                     }
-                    const detail = result.error ? result.error : ('Translated to ' + result.locale);
-                    progress.textContent = detail + '. ' + result.remaining + ' left.';
+                }
+                await Promise.all(Array.from({ length: workers }, drain));
+                if (failures === 0) {
+                    progress.textContent = 'Queue finished.';
                 }
             } catch (error) {
                 progress.textContent = error.message;
