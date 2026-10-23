@@ -1,0 +1,37 @@
+{
+    "name": "wp-auto-translator/wp-auto-translator",
+    "description": "WordPress plugin that translates posts with OpenAI and filters the REST API by locale.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.1",
+        "neuron-core/neuron-ai": "^4.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5",
+        "yoast/phpunit-polyfills": "^2.0",
+        "wp-coding-standards/wpcs": "^3.1",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "WpAutoTranslator\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "WpAutoTranslator\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "sort-packages": true
+    },
+    "scripts": {
+        "test": "phpunit -c phpunit.xml.dist",
+        "lint": "phpcs"
+    }
+}

@@ -1,0 +1,67 @@
+.wat-steps {
+    display: flex;
+    gap: 16px;
+    padding-left: 18px;
+    margin: 16px 0 20px;
+}
+
+.wat-steps .is-current {
+    font-weight: 600;
+}
+
+.wat-locale-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 6px 16px;
+    max-width: 860px;
+    margin: 12px 0;
+}
+
+.wat-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.wat-badge-translated {
+    background: #e6f4ea;
+    color: #0d652d;
+}
+
+.wat-badge-pending,
+.wat-badge-translating {
+    background: #fff8e5;
+    color: #8a5a00;
+}
+
+.wat-badge-failed {
+    background: #fce8e6;
+    color: #c5221f;
+}
+
+.wat-badge-missing {
+    background: #f1f3f4;
+    color: #3c4043;
+}
+
+.wat-badge-outdated {
+    background: #fef7e0;
+    color: #b06000;
+}
+
+.wat-error {
+    color: #c5221f;
+    margin-top: 4px;
+    max-width: 280px;
+}
+
+.wat-progress {
+    min-height: 1.2em;
+    margin: 8px 0 16px;
+}
+
+.wat-actions {
+    display: inline;
+}
