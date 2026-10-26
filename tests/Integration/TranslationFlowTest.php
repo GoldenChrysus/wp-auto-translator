@@ -173,8 +173,19 @@ final class TranslationFlowTest extends \WP_UnitTestCase
         $translatedIds = array_map('intval', wp_list_pluck(rest_get_server()->dispatch($fromTranslatedSlug)->get_data(), 'id'));
         $this->assertSame([$japanese], $translatedIds);
 
+        $japaneseSlugInBase = new \WP_REST_Request('GET', '/wp/v2/posts');
+        $japaneseSlugInBase->set_query_params(['slug' => 'watashi-no-posuto', 'lang' => 'en_US']);
+        $parentIds = array_map('intval', wp_list_pluck(rest_get_server()->dispatch($japaneseSlugInBase)->get_data(), 'id'));
+        $this->assertSame([$english], $parentIds);
+
+        $japaneseSlugInFrench = new \WP_REST_Request('GET', '/wp/v2/posts');
+        $japaneseSlugInFrench->set_query_params(['slug' => 'watashi-no-posuto', 'lang' => 'fr_FR']);
+        $frenchIds = array_map('intval', wp_list_pluck(rest_get_server()->dispatch($japaneseSlugInFrench)->get_data(), 'id'));
+        $this->assertSame([$french], $frenchIds);
+
         $otherLocaleSlug = new \WP_REST_Request('GET', '/wp/v2/posts');
         $otherLocaleSlug->set_query_params(['slug' => 'mon-article', 'lang' => 'ja']);
-        $this->assertSame([], rest_get_server()->dispatch($otherLocaleSlug)->get_data());
+        $fromFrenchIds = array_map('intval', wp_list_pluck(rest_get_server()->dispatch($otherLocaleSlug)->get_data(), 'id'));
+        $this->assertSame([$japanese], $fromFrenchIds);
     }
 }

@@ -47,7 +47,9 @@ final class TranslationRepository
     }
 
     /**
-     * Posts in $locale with one of these slugs, plus translations whose base post has one of these slugs.
+     * The post in $locale that shares a translation group with any of these slugs.
+     *
+     * The slug may belong to the requested locale, the base post, or another translation.
      *
      * @param list<string> $slugs
      * @return list<int>
@@ -72,11 +74,8 @@ final class TranslationRepository
                 FROM {$wpdb->posts} slug_post
                 INNER JOIN {$table} slug_row ON slug_row.post_id = slug_post.ID
                 INNER JOIN {$table} target
-                    ON target.locale = %s
-                    AND (
-                        target.post_id = slug_post.ID
-                        OR (slug_row.source_post_id = 0 AND target.source_post_id = slug_post.ID)
-                    )
+                    ON target.group_id = slug_row.group_id
+                    AND target.locale = %s
                 WHERE slug_post.post_type = %s
                     AND slug_post.post_status NOT IN ('trash', 'auto-draft')
                     AND slug_post.post_name IN ({$placeholders})",

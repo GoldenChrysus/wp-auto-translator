@@ -14,7 +14,7 @@ if (! defined('ABSPATH') && ! defined('WAT_TESTING')) {
  * Without lang, translation posts are hidden from the main archives, the admin list,
  * and REST collections so a translated site does not list every locale at once.
  * Fetch a translation directly by ID, or pass lang, to see it.
- * With both slug and lang, a slug matches the post in that locale or the base post it was translated from.
+ * With both slug and lang, any slug in a translation group matches.
  * The post returned is always the one in the requested locale.
  */
 final class LocaleQuery
